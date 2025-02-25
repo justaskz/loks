@@ -1,3 +1,3 @@
-module github.com/justaskz/slut
+module github.com/justaskz/loks
 
 go 1.22.4

@@ -1,0 +1,61 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    name: Build and Package
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        goos: [linux, darwin]
+        goarch: [amd64, arm64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Build binary
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o loks ./cmd/loks.go
+
+      - name: Package binary
+        run: |
+          tar -czvf loks-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz loks
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: loks-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: loks-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: self-hosted
+
+    steps:
+      - name: Download built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*/*.tar.gz
+          body: "New version of loks"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
