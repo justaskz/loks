@@ -16,6 +16,9 @@ jobs:
         goos: [linux, darwin]
         goarch: [amd64, arm64]
 
+    env:
+      CLI_NAME: $CLI_NAME
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,17 +30,17 @@ jobs:
 
       - name: Build binary
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o loks ./cmd/loks.go
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o $CLI_NAME ./cmd/$CLI_NAME.go
 
       - name: Package binary
         run: |
-          tar -czvf loks-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz loks
+          tar -czvf $CLI_NAME-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz $CLI_NAME
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: loks-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: loks-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+          name: $CLI_NAME-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: $CLI_NAME-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
 
   release:
     name: Create GitHub Release
@@ -54,8 +57,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*/*.tar.gz
-          body: "New version of loks"
+          body: "New version of $CLI_NAME"
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
