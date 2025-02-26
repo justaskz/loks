@@ -4,11 +4,8 @@ test:
 auto_test:
 	@ fswatch -or . | xargs -n1 -I{} go test ./...
 
-run:
-	@ go run main.go
-
 build:
-	@ go build -o bin/loks cmd/loks.go
+	@ go build -o bin/loks cmd/loks/main.go
 	@ chmod +x bin/loks
 
 gen:
