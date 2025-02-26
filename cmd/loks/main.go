@@ -17,7 +17,6 @@ func isJSON(line string) bool {
 	return json.Unmarshal([]byte(line), &js) == nil
 }
 func printJson(json string) {
-	json = DetectLogLevel(json)
 	fmt.Println(json)
 }
 
