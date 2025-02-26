@@ -17,7 +17,7 @@ jobs:
         goarch: [amd64, arm64]
 
     env:
-      CLI_NAME: $CLI_NAME
+      CLI_NAME: loks
 
     steps:
       - name: Checkout code
@@ -30,7 +30,7 @@ jobs:
 
       - name: Build binary
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o $CLI_NAME ./cmd/$CLI_NAME.go
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o $CLI_NAME ./cmd/$CLI_NAME/main.go
 
       - name: Package binary
         run: |
