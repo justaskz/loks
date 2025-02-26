@@ -8,8 +8,8 @@ run:
 	@ go run main.go
 
 build:
-	@ go build -o bin/slut cmd/slut.go
-	@ chmod +x bin/slut
+	@ go build -o bin/loks cmd/loks.go
+	@ chmod +x bin/loks
 
 gen:
 	@ flog -f json -d 500ms -l
