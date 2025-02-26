@@ -5,52 +5,72 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
+
+	"github.com/justaskz/loks/internal/parsers"
 )
 
 type JSONData map[string]interface{}
 
-func isJSON(s string) bool {
+func isJSON(line string) bool {
 	var js JSONData
-	return json.Unmarshal([]byte(s), &js) == nil
+	return json.Unmarshal([]byte(line), &js) == nil
+}
+func printJson(json string) {
+	json = DetectLogLevel(json)
+	fmt.Println(json)
 }
 
-func isLogFmt(s string) bool {
-	return strings.Contains(s, "=") && !isJSON(s)
+func isLogFmt(line string) bool {
+	return strings.Contains(line, "=") && !isJSON(line)
 }
 
-func logFmtToJson(logFmtStr string) string {
-	re := regexp.MustCompile(`(\w+)=([^\s]+)`)
-	matches := re.FindAllStringSubmatch(logFmtStr, -1)
+func print(line string) {
+	fmt.Println(line)
+}
 
-	data := make(map[string]string)
-	for _, match := range matches {
-		if len(match) == 3 {
-			data[match[1]] = match[2]
+func DetectLogLevel(jsonStr string) string {
+	var data map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &data); err != nil {
+		return jsonStr
+	}
+
+	logLevels := map[string]string{
+		"error": "\033[31merror\033[0m", // Red
+		"warn":  "\033[33mwarn\033[0m",  // Orange/Yellow
+		"info":  "\033[32minfo\033[0m",  // Green
+		"debug": "\033[34mdebug\033[0m", // Blue
+	}
+
+	if level, exists := data["level"].(string); exists {
+		if coloredLevel, ok := logLevels[strings.ToLower(level)]; ok {
+			data["level"] = coloredLevel
 		}
 	}
 
-	jsonBytes, err := json.Marshal(data)
+	modifiedJSON, err := json.Marshal(data)
 	if err != nil {
-		return "{}"
+		return jsonStr
 	}
 
-	return string(jsonBytes)
+	return string(modifiedJSON)
 }
 
-func printLog(str string) {
-	fmt.Println(str)
+func printLogFmt(line string) {
+	json := parsers.LogfmtToJson(line)
+	printJson(json)
 }
 
-func printLogFmt(str string) {
-	log := logFmtToJson(str)
-	fmt.Println(log)
+func chooseLogger(line string) func(string) {
+	switch {
+	case isJSON(line):
+		return printJson
+	case isLogFmt(line):
+		return printLogFmt
+	default:
+		return print
+	}
 }
-
-// func chooseLogger(line string) func() {
-// 	return func() {}
-// }
 
 func main() {
 	var scanner *bufio.Scanner
@@ -72,26 +92,11 @@ func main() {
 		firstLine = scanner.Text()
 	}
 
-	switch {
-	case isJSON(firstLine):
-		printLog(firstLine)
-		for scanner.Scan() {
-			log := scanner.Text()
-			printLog(log)
-		}
-	case isLogFmt(firstLine):
-		printLogFmt(firstLine)
-
-		for scanner.Scan() {
-			log := scanner.Text()
-			printLogFmt(log)
-		}
-	default:
-		fmt.Println(firstLine)
-
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
+	logger := chooseLogger(firstLine)
+	logger(firstLine)
+	for scanner.Scan() {
+		log := scanner.Text()
+		logger(log)
 	}
 
 	if err := scanner.Err(); err != nil {
