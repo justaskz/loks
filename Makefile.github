@@ -1,0 +1,9 @@
+# run:
+# 	# @ act --workflows k9s.yaml --platform self-hosted=docker:dind --container-architecture linux/amd64 --bind
+# 	@ act --workflows k9s.yaml --platform self-hosted=summerwind/actions-runner --container-architecture linux/amd64 --bind
+
+# list:
+# 	@ act --workflows k9s.yaml --platform self-hosted=docker:dind --container-architecture linux/amd64 list
+
+# connect:
+# 	@ docker run -it docker:dind /bin/sh

@@ -33,29 +33,29 @@ jobs:
         run: |
           tar -czvf loks-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz loks
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: loks-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: loks-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+  #     - name: Upload artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: loks-${{ matrix.goos }}-${{ matrix.goarch }}
+  #         path: loks-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
 
-  release:
-    name: Create GitHub Release
-    needs: build
-    runs-on: self-hosted
+  # release:
+  #   name: Create GitHub Release
+  #   needs: build
+  #   runs-on: self-hosted
 
-    steps:
-      - name: Download built artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+  #   steps:
+  #     - name: Download built artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: artifacts
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/*/*.tar.gz
-          body: "New version of loks"
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+  #     - name: Create GitHub Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         files: artifacts/*/*.tar.gz
+  #         body: "New version of loks"
+  #         draft: false
+  #         prerelease: false
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
